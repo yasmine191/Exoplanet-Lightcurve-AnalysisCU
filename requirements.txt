@@ -1,0 +1,8 @@
+lightkurve
+astropy
+pytransit
+numpy
+matplotlib
+scipy
+astroquery
+pandas
