@@ -45,7 +45,10 @@ def lc_download(planet_name, mission, author=None):
         lc = lc_collection
     
 #   clean and normalize and flatten
-    lc_clean = lc.normalize().remove_nans().remove_outliers(sigma=5).flatten(window_length=401)
+    lc_clean = lc.normalize().remove_nans().remove_outliers(sigma=5).flatten(
+    window_length=401,
+    break_tolerance=5   # gaps > 5x the median cadence spacing are treated as breaks
+    )
     
     print(f"Download complete. {len(lc_clean)} data points.")
     return lc_clean
@@ -182,7 +185,10 @@ def download_selected(search_result, idx, quality_bitmask="hardest", flux_column
         flux_column=flux_column
     )
 
-    lc_clean = lc.normalize().remove_nans().remove_outliers(sigma=5).flatten(window_length=401)
+    lc_clean = lc.normalize().remove_nans().remove_outliers(sigma=5).flatten(
+    window_length=401,
+    break_tolerance=5   # gaps > 5x the median cadence spacing are treated as breaks
+    )
 
     print(f"Download complete. {len(lc_clean)} data points.")
     return lc_clean
