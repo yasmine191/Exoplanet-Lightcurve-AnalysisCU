@@ -76,6 +76,10 @@ def choose_planet(df):
     -------
     planet_name : str
         The name of the chosen planet.
+    stellar_mass : float
+        Host star mass (st_mass) for the chosen planet.
+    stellar_radius : float
+        Host star radius (st_rad) for the chosen planet.
     """
     print("\nAvailable Hot Jupiters:")
     print(df[["pl_name", "hostname", "pl_massj", 
@@ -85,7 +89,10 @@ def choose_planet(df):
         choice = input("\nEnter the planet name exactly as shown above: ").strip()
         if choice in df["pl_name"].values:
             print(f"You selected: {choice}")
-            return choice
+            row = df.loc[df["pl_name"] == choice].iloc[0]
+            stellar_mass = row["st_mass"]
+            stellar_radius = row["st_rad"]
+            return choice, stellar_mass, stellar_radius
         else:
             print("Planet not found. Please try again and make sure the name is exactly the same!.")
 
@@ -129,8 +136,12 @@ def get_user_input(df):
     -------
     planet_name : str
     mission : str
+    stellar_mass : float
+        Host star mass (st_mass) for the chosen planet.
+    stellar_radius : float
+        Host star radius (st_rad) for the chosen planet.
     """
-    planet_name = choose_planet(df)
+    planet_name, stellar_mass, stellar_radius = choose_planet(df)
 
     available_missions = get_available_missions(planet_name)
 
@@ -142,7 +153,7 @@ def get_user_input(df):
     if len(available_missions) == 1:
         mission = available_missions[0]
         print(f"\n{planet_name} has data only from {mission} — using {mission} automatically.")
-        return planet_name, mission
+        return planet_name, mission, stellar_mass, stellar_radius
 
     print(f"\nAvailable missions for {planet_name}:")
     menu = {}
@@ -164,4 +175,4 @@ def get_user_input(df):
             print(f"Invalid choice. Please enter a number between 1 and {len(available_missions)}.")
 
     print(f"\nSelected: {planet_name} from {mission}")
-    return planet_name, mission
+    return planet_name, mission, stellar_mass, stellar_radius

@@ -1,5 +1,39 @@
+import numpy as np
 import lightkurve as lk
 DEFAULT_AUTHORS = {"TESS": "SPOC", "Kepler": "Kepler", "K2": "K2"}
+
+
+def check_lightcurve_quality(lc, max_gap_fraction=0.3, min_points=500, max_single_gap_days=2.0):
+    """
+    Quick data-quality gate before running BLS.
+    Returns True if the light curve is usable, False (with a printed reason) if not.
+    """
+    time = lc.time.value
+    n_points = len(time)
+    if n_points < min_points:
+        print(f"Too few data points ({n_points} < {min_points}) — try a different target.")
+        return False
+    # Expected cadence: median spacing between consecutive points
+    dt = np.diff(time)
+    median_cadence = np.median(dt)
+    # Total time span vs. how much is actually covered by data
+    time_span = time[-1] - time[0]
+    expected_points = time_span / median_cadence
+    coverage_fraction = n_points / expected_points
+    if coverage_fraction < (1 - max_gap_fraction):
+        print(f"Light curve has too many gaps (only {coverage_fraction*100:.1f}% "
+              f"of expected coverage) — try a different target.")
+        return False
+    # Longest single gap, in days
+    longest_gap = dt.max()
+    if longest_gap > max_single_gap_days:
+        print(f"Longest single gap is {longest_gap:.2f} days — likely a major "
+              f"data downlink/sector gap. Try a different target or a different sector.")
+        return False
+    print(f"Light curve OK: {n_points} points, {coverage_fraction*100:.1f}% coverage, "
+          f"longest gap {longest_gap:.2f} d")
+    return True
+
 
 def lc_download(planet_name, mission, author=None):
     """
@@ -51,6 +85,11 @@ def lc_download(planet_name, mission, author=None):
     )
     
     print(f"Download complete. {len(lc_clean)} data points.")
+
+#   instant quality gate — bail out here if the light curve isn't usable
+    if not check_lightcurve_quality(lc_clean):
+        raise ValueError("Light curve failed quality check — choose a different target.")
+
     return lc_clean
 
 #==================================================================================================================
@@ -191,4 +230,9 @@ def download_selected(search_result, idx, quality_bitmask="hardest", flux_column
     )
 
     print(f"Download complete. {len(lc_clean)} data points.")
+
+#   instant quality gate — bail out here if the light curve isn't usable
+    if not check_lightcurve_quality(lc_clean):
+        raise ValueError("Light curve failed quality check — choose a different target.")
+
     return lc_clean
