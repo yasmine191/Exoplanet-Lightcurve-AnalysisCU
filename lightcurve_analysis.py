@@ -6,6 +6,55 @@ from astropy.timeseries import BoxLeastSquares
 from astroquery.ipac.nexsci.nasa_exoplanet_archive import NasaExoplanetArchive
 
 
+def check_transit_minimum(transit_window, solution, min_points_in_transit=5, core_fraction=0.5):
+    """
+    Verifies the folded/windowed light curve actually has data points
+    covering the transit minimum (not just ingress/egress wings).
+    A missing minimum makes the fold unusable for modeling.
+
+    Parameters
+    ----------
+    transit_window : LightCurve
+        Output of get_transit_window().
+    solution : dict
+        Output of save_transit_solution() (needs 'duration_days', 'planet_name').
+    min_points_in_transit : int
+        Minimum number of points required within the transit core.
+    core_fraction : float
+        Fraction of the full duration considered "core" (centered on t0=0)
+        that must contain data.
+
+    Returns
+    -------
+    bool
+        True if the minimum is adequately covered.
+
+    Raises
+    ------
+    ValueError
+        If the transit core has too few points — modeling cannot proceed.
+    """
+    duration_days = solution["duration_days"]
+    half_core = 0.5 * core_fraction * duration_days
+
+    phase = transit_window.time.value
+    core_mask = np.abs(phase) <= half_core
+    n_core = int(core_mask.sum())
+
+    if n_core < min_points_in_transit:
+        raise ValueError(
+            f"\n*** CRITICAL: transit minimum is missing for {solution['planet_name']} ***\n"
+            f"Only {n_core} point(s) found within ±{half_core * 24:.2f} hr of mid-transit "
+            f"(need at least {min_points_in_transit}).\n"
+            f"The actual transit dip isn't covered by data, so modeling cannot proceed.\n"
+            f"Please choose a different planet or a different sector/quarter/campaign."
+        )
+
+    print(f"Transit minimum check passed: {n_core} points within "
+          f"±{half_core * 24:.2f} hr of mid-transit.")
+    return True
+#===================================================================================
+
 def build_bls(lc):
     """
     builds a BoxLeastSquares object using the light curve's real per-point
