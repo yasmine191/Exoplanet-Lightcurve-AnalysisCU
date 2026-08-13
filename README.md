@@ -4,3 +4,13 @@ We are going to use exoplanet data from TESS and/or Kepler to analyze their ligh
 
 
 
+
+
+
+
+
+
+
+
+
+![License](https://img.shields.io/badge/License-MIT-green)
