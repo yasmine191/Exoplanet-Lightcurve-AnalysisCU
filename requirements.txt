@@ -6,3 +6,5 @@ matplotlib
 scipy
 astroquery
 pandas
+emcee  
+requests
