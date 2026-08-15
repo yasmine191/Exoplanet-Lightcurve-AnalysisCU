@@ -1,5 +1,7 @@
 # Exoplanet Light Curve Analysis Pipeline
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A simple, end-to-end Python pipeline built by physics and astronomy students to process, model, and analyze Hot Jupiter transit light curves using observation data from space missions.
 
 ## What This Project Does
@@ -21,3 +23,11 @@ Ensure you have the following packages installed:
 
 ```bash
 pip install numpy scipy pandas matplotlib astropy lightkurve pytransit emcee requests
+```
+## How to run
+
+Run the main execution script directly from your terminal:
+
+```bash
+python main.py
+```
